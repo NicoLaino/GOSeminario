@@ -8,9 +8,9 @@ import (
 
 // DbConfig ...
 type DbConfig struct {
-	//Type   string `yaml:"type"`
+	Type   string `yaml:"type"`
 	Driver string `yaml:"driver"`
-	//Conn   string `yaml:"conn"`
+	Conn   string `yaml:"conn"`
 }
 
 // Config ...
