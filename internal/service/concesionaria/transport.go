@@ -34,33 +34,32 @@ func makeEndpoints(s Service) []*endpoint {
 
 	list = append(list, &endpoint{
 		method:   "GET",
-		path:     "/messages",
+		path:     "/cars",
 		function: getAll(s),
 	})
 
 	list = append(list, &endpoint{
 		method:   "GET",
-		path:     "/messages/:id",
-		function: getMessageByID(s),
+		path:     "/cars/:id",
+		function: getCarByID(s),
 	})
 
 	list = append(list, &endpoint{
 		method:   "DELETE",
-		path:     "/messages/:id",
-		function: deleteMessageByID(s),
+		path:     "/cars/:id",
+		function: deleteCarByID(s),
 	})
 	
 	list = append(list, &endpoint{
 		method:   "POST",
-		path:     "/messages",
-		function: postMessage(s),
+		path:     "/cars",
+		function: postCar(s),
 	})
-/*
 	list = append(list, &endpoint{
 		method:   "PUT",
-		path:     "/messages/:id",
-		function: updateMessage(s),
-	})*/
+		path:     "/cars/:id",
+		function: updateCar(s),
+	})
 
 	return list
 }
@@ -72,12 +71,12 @@ func getAll(s Service) gin.HandlerFunc {
 			fmt.Println(errFindAll.Error())
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"messages": result,
+			"Cars": result,
 		})
 	}
 }
 
-func getMessageByID(s Service) gin.HandlerFunc {
+func getCarByID(s Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -88,12 +87,12 @@ func getMessageByID(s Service) gin.HandlerFunc {
 			fmt.Println(errFindByID.Error())
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"messages": *result,
+			"Car": *result,
 		})
 	}
 }
 
-func deleteMessageByID(s Service) gin.HandlerFunc {
+func deleteCarByID(s Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -104,65 +103,44 @@ func deleteMessageByID(s Service) gin.HandlerFunc {
 			fmt.Println(errDeleteByID.Error())
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"messages": result,
+			"Result": result,
 		})
 	}
 }
 
-func postMessage(s Service) gin.HandlerFunc {
-
+func postCar(s Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var message Message
+		var car Car
 
-		c.BindJSON(&message)
-		queryResult, err := s.AddMessage(message)
+		c.BindJSON(&car)
+		queryResult, err := s.AddCar(car)
 
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 			c.JSON(http.StatusOK, gin.H{
-				"messages": queryResult,
+				"Result": queryResult,
 			})
 	}
-
 }
 
-
-
-
-/*func updateBook(s BookService) gin.HandlerFunc {
-
+func updateCar(s Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var book Book
-		var httpErrorMsg *ErrorResponse
-
-		ID, errAtoi := strconv.Atoi(c.Param("id"))
-
-		c.BindJSON(&book)
-		queryResult, err := s.UpdateBook(ID, book)
-
-		if errAtoi != nil {
-			httpErrorMsg = &ErrorResponse{Message: errAtoi.Error()}
-		}
+		var car Car
+		ID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			httpErrorMsg = &ErrorResponse{Message: err.Error()}
+			fmt.Println(err.Error())
 		}
-		if queryResult.rowsAffected == 0 {
-			httpErrorMsg = &ErrorResponse{Message: fmt.Sprintf("Requested ID: %v not found", ID)}
+		c.BindJSON(&car)
+		result, errUpdateByID := s.UpdateByID(ID, car)
+		if errUpdateByID != nil {
+			fmt.Println(errUpdateByID.Error())
 		}
-
-		if errAtoi != nil || err != nil || queryResult.rowsAffected == 0 {
-			c.JSON(http.StatusNotFound, gin.H{
-				"Error": httpErrorMsg,
-			})
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"Updated books": queryResult.rowsAffected,
-			})
-		}
-
+		c.JSON(http.StatusOK, gin.H{
+			"Result": result,
+		})
 	}
-}*/
+}
 
 // Register ...
 func (s httpService) Register(r *gin.Engine) {

@@ -6,9 +6,9 @@ import (
 	"fmt"
 )
 
-// Message...
-type Message struct {
-	ID int64
+// Car...
+type Car struct {
+	ID int
 	Text string
 }
 
@@ -18,10 +18,11 @@ type queryResult struct {
 
 // Service Public Interface
 type Service interface {
-	AddMessage(Message) (*queryResult, error) 
-	FindByID(int) (*Message, error)
-	FindAll() ([]*Message, error)
+	AddCar(Car) (*queryResult, error) 
+	FindByID(int) (*Car, error)
+	FindAll() ([]*Car, error)
 	DeleteByID(int) (*queryResult, error)
+	UpdateByID(int, Car) (*queryResult, error)
 }
 
 // Service Struct (not public)
@@ -35,10 +36,10 @@ func New (db *sqlx.DB, c *config.Config) (Service, error) {
 	return service{db, c}, nil
 }
 
-func (s service) AddMessage (message Message) (*queryResult, error) {
-	sqlStatement := "INSERT INTO messages (text) VALUES (:text);"
+func (s service) AddCar (car Car) (*queryResult, error) {
+	sqlStatement := "INSERT INTO cars (text) VALUES (:text);"
 
-	result, err := s.db.NamedExec(sqlStatement, &message)
+	result, err := s.db.NamedExec(sqlStatement, &car)
 
 	if err != nil {
 		return nil, err
@@ -53,10 +54,10 @@ func (s service) AddMessage (message Message) (*queryResult, error) {
 	return sqlResult, nil
 }
 
-func (s service) FindAll () ([]*Message, error) {
-	var list []*Message
+func (s service) FindAll () ([]*Car, error) {
+	var list []*Car
 	
-	if err := s.db.Select(&list, "SELECT * FROM messages");err != nil {
+	if err := s.db.Select(&list, "SELECT * FROM cars");err != nil {
 		return nil, err
 	}
 
@@ -64,21 +65,21 @@ func (s service) FindAll () ([]*Message, error) {
 }
 
 
-func (s service) FindByID(ID int) (*Message, error) {
-	var message Message
-	sqlStatement := "SELECT * FROM messages WHERE id=?;"
+func (s service) FindByID(ID int) (*Car, error) {
+	var car Car
+	sqlStatement := "SELECT * FROM cars WHERE id=?;"
 
-	err := s.db.QueryRowx(sqlStatement, ID).StructScan(&message)
+	err := s.db.QueryRowx(sqlStatement, ID).StructScan(&car)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &message, nil
+	return &car, nil
 }
 
 func (s service) DeleteByID(ID int) (*queryResult, error) {
-	sqlStatement := "DELETE FROM messages WHERE id=?;"
+	sqlStatement := "DELETE FROM cars WHERE id=?;"
 
 	result, err := s.db.Exec(sqlStatement, ID)
 
@@ -90,6 +91,27 @@ func (s service) DeleteByID(ID int) (*queryResult, error) {
 
 	sqlResult := &queryResult{
 		TextResult: "Deleted Row.",
+	}
+
+	return sqlResult, nil
+}
+
+func (s service) UpdateByID(ID int, car Car) (*queryResult, error) {
+
+	car.ID = ID
+
+	sqlStatement := `UPDATE cars SET text=:text WHERE id=:id;`
+
+	result, err := s.db.NamedExec(sqlStatement, &car)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(result)
+
+	sqlResult := &queryResult{
+		TextResult: "Row Updated.",
 	}
 
 	return sqlResult, nil

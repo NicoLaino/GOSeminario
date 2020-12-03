@@ -20,6 +20,12 @@ func main() {
 	// Crear Conexión a DB
 	db, err := database.NewDatabase(cfg)
 	defer db.Close()
+
+	/* Crear Schema de DB
+	if err :=  createSchema(db); err != nil{
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}*/
 	
 	if err != nil {
 		fmt.Println(err.Error())
@@ -51,7 +57,7 @@ func readConfig() *config.Config {
 }
 
 func createSchema(db *sqlx.DB) error {
-	schema := `CREATE TABLE IF NOT EXISTS messages (
+	schema := `CREATE TABLE IF NOT EXISTS cars (
 		id integer primary key autoincrement,
 		text varchar);`
 
@@ -62,8 +68,8 @@ func createSchema(db *sqlx.DB) error {
 	}
 
 	// or, you can use MustExec, which panics on error
-	insertMessage := `INSERT INTO messages (text) VALUES (?)`
-	s := fmt.Sprintf("Message number %v", time.Now().Nanosecond())
-	db.MustExec(insertMessage, s)
+	insertCar := `INSERT INTO cars (text) VALUES (?)`
+	s := fmt.Sprintf("Car number %v", time.Now().Nanosecond())
+	db.MustExec(insertCar, s)
 	return nil
 }
