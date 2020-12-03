@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	//"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/NicoLaino/GOSeminario/internal/config"
 	"github.com/NicoLaino/GOSeminario/internal/database"
@@ -19,24 +19,21 @@ func main() {
 
 	// Crear Conexión a DB
 	db, err := database.NewDatabase(cfg)
+	defer db.Close()
+	
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// Crear Schema de DB
-	if err :=  createSchema(db); err != nil{
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
 	// Instanciar servicio e injectar db y configuración
 	service, _ := concesionaria.New(db, cfg)
+	httpService := concesionaria.NewHTTPTransport(service)
 
-	// Mostrar los mensajes
-	for _, m := range service.FindAll() {
-		fmt.Println(m)
-	}
+	r := gin.Default()
+	httpService.Register(r)
+	r.Run()
+
 }
 
 func readConfig() *config.Config {
@@ -49,8 +46,7 @@ func readConfig() *config.Config {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	// fmt.Println(cfg.DB.Driver)
-	// fmt.Println(cfg.Version)
+
 	return cfg
 }
 
